@@ -1,7 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { locations, getLocationBySlug, DATA_SOURCE } from "@/data/locations";
+import {
+  locations,
+  getLocationBySlug,
+  DATA_SOURCE,
+  changeCategoryFor,
+  CHANGE_TAG_LABEL,
+  type Location,
+} from "@/data/locations";
 import { getScenesByYear } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
@@ -25,6 +32,28 @@ export async function generateMetadata({
   };
 }
 
+/**
+ * 関連地点を3件選ぶ。まず同じ変化種別タグの地点を優先し、足りなければ
+ * changeScore が近い地点で補う（自分自身は除外）。
+ */
+function relatedLocations(current: Location): Location[] {
+  const others = locations.filter((l) => l.slug !== current.slug);
+  const sameTag = others.filter(
+    (l) => changeCategoryFor(l) === changeCategoryFor(current),
+  );
+  const byScore = [...others].sort(
+    (a, b) =>
+      Math.abs(a.changeScore - current.changeScore) -
+      Math.abs(b.changeScore - current.changeScore),
+  );
+  const picked: Location[] = [];
+  for (const l of [...sameTag, ...byScore]) {
+    if (picked.length >= 3) break;
+    if (!picked.some((p) => p.slug === l.slug)) picked.push(l);
+  }
+  return picked;
+}
+
 export default async function LocationPage({
   params,
 }: {
@@ -46,6 +75,17 @@ export default async function LocationPage({
   const afterYear = afterEntry?.year ?? "2024";
   const beforeUrl = previewUrlForScene(before?.id);
   const afterUrl = previewUrlForScene(after?.id);
+
+  // 関連地点（同じ変化種別を優先、不足分は changeScore が近い順）。
+  const related = relatedLocations(loc).map((r) => {
+    const avail = getScenesByYear(r.slug).filter((y) => y.scene);
+    const latest = avail[avail.length - 1];
+    return {
+      loc: r,
+      previewUrl: previewUrlForScene(latest?.scene?.id),
+      tagLabel: CHANGE_TAG_LABEL[changeCategoryFor(r)],
+    };
+  });
 
   // 在庫にある年のみを temporalCoverage / Dataset に含める（捏造しない）。
   const coveredYears = byYear
@@ -168,6 +208,45 @@ export default async function LocationPage({
           );
         })}
       </div>
+
+      <p className="section-label">関連地点</p>
+      <div className="related-grid">
+        {related.map(({ loc: r, previewUrl, tagLabel }) => (
+          <Link key={r.slug} href={`/${r.slug}`} className="related-card">
+            <div className="media-169">
+              {previewUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={previewUrl} alt={`${r.name}`} loading="lazy" />
+              ) : (
+                <div className="placeholder">画像なし</div>
+              )}
+            </div>
+            <div className="related-body">
+              <p className="related-name">{r.name}</p>
+              <div className="tag-badges">
+                <span className="change-tag">{tagLabel}</span>
+                <span className="card-score" style={{ margin: 0 }}>
+                  {r.changeScore}/10
+                </span>
+              </div>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      <p className="section-label">関連プロジェクト</p>
+      <p className="change-desc" style={{ marginBottom: "0.5rem" }}>
+        地球から宇宙へ。姉妹プロジェクト OrbSeekr では、太陽フレアや地磁気嵐
+        などの宇宙天気を追っています。
+      </p>
+      <a
+        href="https://space-mvp.vercel.app/spaceweather"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="orbseekr-link"
+      >
+        🌌 OrbSeekr 宇宙天気を見る →
+      </a>
 
       <dl className="source-box">
         <p style={{ margin: 0, color: "var(--fg)", fontWeight: 600 }}>
