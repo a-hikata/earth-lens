@@ -60,11 +60,29 @@ export function getBestScene(
   return sorted[0] ?? null;
 }
 
-/** All curated years -> best scene (or null) for a location. */
+/**
+ * Years actually present in a location's inventory, sorted ascending.
+ * Falls back to CURATED_YEARS for any location missing from the inventory
+ * (keeps callers backward compatible for the original curated locations).
+ */
+export function getInventoryYears(slug: string): string[] {
+  const loc = inventory.locations[slug];
+  if (!loc || !loc.years) return [...CURATED_YEARS];
+  const years = Object.keys(loc.years);
+  if (years.length === 0) return [...CURATED_YEARS];
+  return years.sort((a, b) => Number(a) - Number(b));
+}
+
+/**
+ * Each year present in this location's own inventory (ascending) -> best
+ * scene (or null). Locations use varied year sets (e.g. 1972/2010/2015), so
+ * we read the location's own years rather than a fixed global list. A year
+ * recorded with zero scenes yields a null scene (never fabricated).
+ */
 export function getScenesByYear(
   slug: string,
-): Array<{ year: CuratedYear; scene: InventoryScene | null }> {
-  return CURATED_YEARS.map((year) => ({
+): Array<{ year: string; scene: InventoryScene | null }> {
+  return getInventoryYears(slug).map((year) => ({
     year,
     scene: getBestScene(slug, year),
   }));

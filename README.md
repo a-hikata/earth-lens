@@ -134,3 +134,32 @@ collection `landsat-c2-l2`。**全9セルでシーン取得に成功**。
 → 3地点とも **Landsat-5(1985) → Landsat-7(2000) → Landsat-8(2024)** の
 40年スパンの Before/After が API 経由で取得可能。シーンID・雲量・WRS path/row は
 `data/scene-inventory.json` に記録。
+
+---
+
+## Deploy (Vercel)
+
+このプロジェクトは標準的な Next.js 15 アプリで、ビルド・実行に
+**環境変数は不要**です（Landsat データは APIキー不要の Microsoft Planetary
+Computer STAC から取得し、シーン在庫は `data/scene-inventory.json` として
+リポジトリにコミット済み・ビルド時にバンドルされます）。
+
+### GitHub 連携でデプロイ（推奨）
+
+1. このリポジトリを GitHub に push する。
+2. [Vercel](https://vercel.com/) で **New Project** → 当該 GitHub リポジトリを
+   import する。
+3. Framework Preset は **Next.js** が自動検出される（`vercel.json` でも
+   `"framework": "nextjs"` を明示済み）。Build/Output 設定はデフォルトのまま。
+4. **環境変数の設定は不要**（`.env.example` 参照。必須・任意ともに無し）。
+5. **Deploy** を押すと本番デプロイされ、以降は push のたびに自動デプロイされる。
+
+### Vercel CLI でデプロイ
+
+```bash
+npm i -g vercel        # 初回のみ
+vercel                 # プレビューデプロイ（対話で project をリンク）
+vercel --prod          # 本番デプロイ
+```
+
+設定ファイル: `vercel.json`（framework: nextjs）, `.env.example`（必須env無し）。
