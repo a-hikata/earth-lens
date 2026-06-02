@@ -348,3 +348,61 @@ export function getLocationBySlug(slug: string): Location | undefined {
     (loc) => loc.slug === slug || loc.aliases?.includes(slug),
   );
 }
+
+/**
+ * 変化種別タグ。changeCause の文面から各地点を1つの種別に割り当てる
+ * （編集上の分類。slug ごとに固定）。
+ */
+export type ChangeCategory =
+  | "氷河・雪氷"
+  | "森林"
+  | "都市"
+  | "水域"
+  | "農地"
+  | "砂漠";
+
+/** タグ表示用の短いラベル（カードのバッジ）。 */
+export const CHANGE_TAG_LABEL: Record<ChangeCategory, string> = {
+  "氷河・雪氷": "氷河後退",
+  森林: "森林消失",
+  都市: "都市拡大",
+  水域: "水域変化",
+  農地: "農地",
+  砂漠: "砂漠化",
+};
+
+const CHANGE_CATEGORY_BY_SLUG: Record<string, ChangeCategory> = {
+  "aral-sea": "水域",
+  "tokyo-bay": "都市",
+  "dubai-coast": "都市",
+  "lake-chad": "水域",
+  "larsen-b": "氷河・雪氷",
+  "greenland-jakobshavn": "氷河・雪氷",
+  "amazon-rondonia": "森林",
+  "dubai-palm": "都市",
+  "syria-farmland": "農地",
+  "california-drought": "農地",
+  "bangladesh-floodplain": "水域",
+  "gobi-desert": "砂漠",
+  "tokyo-sprawl": "都市",
+  "three-gorges-dam": "水域",
+  "saudi-pivot-agriculture": "農地",
+};
+
+export function changeCategoryFor(loc: Location): ChangeCategory {
+  return CHANGE_CATEGORY_BY_SLUG[loc.slug] ?? "水域";
+}
+
+export type Region = "アジア" | "ヨーロッパ" | "アメリカ" | "アフリカ" | "極地";
+
+/** lat/lon から地域を導出（おおまかな編集上の分類）。 */
+export function regionFor(loc: Location): Region {
+  const { lat, lon } = loc;
+  if (Math.abs(lat) >= 60) return "極地";
+  if (lon <= -30) return "アメリカ";
+  // アフリカ大陸の大まかな範囲（チャド湖など）
+  if (lon >= -20 && lon <= 52 && lat >= -35 && lat < 27) return "アフリカ";
+  // ヨーロッパは概ね lon -10〜36（中東・中央アジアは アジア に寄せる）
+  if (lon >= -10 && lon <= 36 && lat >= 36) return "ヨーロッパ";
+  return "アジア";
+}

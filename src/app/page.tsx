@@ -1,59 +1,121 @@
 import Link from "next/link";
-import { locations, getLocationBySlug } from "@/data/locations";
+import {
+  locations,
+  changeCategoryFor,
+  regionFor,
+  CHANGE_TAG_LABEL,
+} from "@/data/locations";
 import { getScenesByYear } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
+import LocationExplorer, {
+  type ExplorerCard,
+} from "@/components/LocationExplorer";
 
-// 最も劇的な変化トップ3。湖の消失・熱帯雨林の破壊・棚氷の崩壊という、
-// 規模・速度ともに際立つ3地点を選定。各 reason は一行の理由。
-const TOP_THREE: { slug: string; reason: string }[] = [
-  {
-    slug: "aral-sea",
-    reason: "灌漑取水で世界第4位の湖がほぼ消失。人為的環境破壊の最大級の一つ。",
-  },
-  {
-    slug: "amazon-rondonia",
-    reason: "「フィッシュボーン」状の森林伐採で熱帯雨林が農地・牧草地へ。",
-  },
-  {
-    slug: "larsen-b",
-    reason: "約3,250km²の南極棚氷が数週間で崩壊。温暖化の象徴的事例。",
-  },
-];
+/**
+ * 各地点について、在庫にある最古年(before)と最新年(after)の実シーンから
+ * プレビュー URL を導出する。シーン ID は inventory のみが情報源で、
+ * 在庫が無い年は null（プレースホルダ）になる。捏造はしない。
+ */
+function previewsFor(slug: string) {
+  const available = getScenesByYear(slug).filter((y) => y.scene);
+  const beforeEntry = available[0];
+  const afterEntry = available[available.length - 1];
+  return {
+    beforeUrl: previewUrlForScene(beforeEntry?.scene?.id),
+    afterUrl: previewUrlForScene(afterEntry?.scene?.id),
+    beforeYear: beforeEntry?.year ?? "—",
+    afterYear: afterEntry?.year ?? "—",
+  };
+}
 
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: Promise<{ sort?: string }>;
-}) {
-  const { sort } = await searchParams;
-  // 変化速度スコア順でカードを並べ替える。既定は desc（変化が大きい順）。
-  const sortDir: "desc" | "asc" = sort === "asc" ? "asc" : "desc";
-  const sortedLocations = [...locations].sort((a, b) =>
-    sortDir === "asc"
-      ? a.changeScore - b.changeScore
-      : b.changeScore - a.changeScore,
-  );
+export default function HomePage() {
+  // 変化速度スコア降順。上位3件を「最も劇的な変化」に。
+  const sorted = [...locations].sort((a, b) => b.changeScore - a.changeScore);
+  const topThree = sorted.slice(0, 3);
+
+  const cards: ExplorerCard[] = locations.map((loc) => {
+    const cat = changeCategoryFor(loc);
+    const p = previewsFor(loc.slug);
+    return {
+      slug: loc.slug,
+      name: loc.name,
+      englishName: loc.englishName,
+      description: loc.description,
+      changeScore: loc.changeScore,
+      category: cat,
+      tagLabel: CHANGE_TAG_LABEL[cat],
+      region: regionFor(loc),
+      beforeUrl: p.beforeUrl,
+      afterUrl: p.afterUrl,
+      beforeYear: p.beforeYear,
+      afterYear: p.afterYear,
+    };
+  });
 
   return (
     <main>
-      <h1 className="site-title">🛰️ Earth Lens</h1>
-      <p className="tagline">
-        Landsat の50年アーカイブで、同一地点の「過去 vs 現在」を並べる。
-      </p>
+      {/* S1 Hero */}
+      <section className="hero">
+        <p className="hero-eyebrow">🛰️ Earth Lens</p>
+        <h1 className="hero-title">
+          地球は変わり続けている。衛星が、それを見ている。
+        </h1>
+        <p className="hero-sub">
+          Landsatの50年アーカイブで、同一地点の変化を見る。
+        </p>
+        <a href="#locations" className="hero-cta">
+          変化を見る
+        </a>
+      </section>
 
-      <section className="top-three" aria-label="最も劇的な変化 トップ3">
-        <p className="section-label">最も劇的な変化 トップ3</p>
-        <div className="top-three-grid">
-          {TOP_THREE.map(({ slug, reason }, i) => {
-            const loc = getLocationBySlug(slug);
-            if (!loc) return null;
+      {/* S2 トップ3 */}
+      <section className="top3-section" aria-label="最も劇的な変化 トップ3">
+        <p className="section-label">最も劇的な変化</p>
+        <div className="top3-grid">
+          {topThree.map((loc) => {
+            const p = previewsFor(loc.slug);
+            const cat = changeCategoryFor(loc);
             return (
-              <Link key={slug} href={`/${loc.slug}`} className="top-three-card">
-                <div className="top-three-rank">#{i + 1}</div>
-                <div>
+              <Link
+                key={loc.slug}
+                href={`/${loc.slug}`}
+                className="top3-card"
+              >
+                <div className="media-169 top3-media">
+                  <div className="top3-score">
+                    <span className="top3-score-num">{loc.changeScore}</span>
+                    <span className="top3-score-den">/10</span>
+                  </div>
+                  <span className="top3-badge">最も劇的な変化</span>
+                  {p.beforeUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={p.beforeUrl}
+                      alt={`${loc.name} ${p.beforeYear}`}
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="placeholder">画像なし</div>
+                  )}
+                  {p.afterUrl && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className="swap-after"
+                      src={p.afterUrl}
+                      alt={`${loc.name} ${p.afterYear}`}
+                      loading="lazy"
+                    />
+                  )}
+                  <span className="top3-yearhint">
+                    {p.beforeYear} → {p.afterYear}（ホバーで切替）
+                  </span>
+                </div>
+                <div className="top3-body">
                   <h2 className="card-title">{loc.name}</h2>
-                  <div className="card-en">{loc.englishName}</div>
-                  <p className="card-desc">{reason}</p>
+                  <div className="tag-badges">
+                    <span className="change-tag">{CHANGE_TAG_LABEL[cat]}</span>
+                  </div>
+                  <p className="card-desc">{loc.description}</p>
                 </div>
               </Link>
             );
@@ -61,81 +123,35 @@ export default async function HomePage({
         </div>
       </section>
 
-      <div className="sort-control" role="group" aria-label="変化速度スコアで並べ替え">
-        <span className="section-label" style={{ margin: 0 }}>
-          変化速度スコア順
-        </span>
-        <Link
-          href="/?sort=desc"
-          className={`sort-link${sortDir === "desc" ? " is-active" : ""}`}
-          aria-current={sortDir === "desc" ? "true" : undefined}
-        >
-          大きい順
-        </Link>
-        <Link
-          href="/?sort=asc"
-          className={`sort-link${sortDir === "asc" ? " is-active" : ""}`}
-          aria-current={sortDir === "asc" ? "true" : undefined}
-        >
-          小さい順
-        </Link>
-      </div>
+      {/* S3 地点グリッド + S4 フィルタ */}
+      <section id="locations" aria-label="地点一覧">
+        <p className="section-label">すべての地点</p>
+        <LocationExplorer cards={cards} />
+      </section>
 
-      <div className="gallery">
-        {sortedLocations.map((loc) => {
-          // Grounded preview: each location uses its OWN year set, so derive
-          // the "before" thumb from the earliest available year with a real
-          // scene and the "after" thumb from the latest. Scene IDs come only
-          // from the inventory (else null -> placeholder). Never fabricated.
-          const available = getScenesByYear(loc.slug).filter((y) => y.scene);
-          const beforeEntry = available[0];
-          const afterEntry = available[available.length - 1];
-          const beforeYear = beforeEntry?.year ?? "—";
-          const afterYear = afterEntry?.year ?? "—";
-          const beforeUrl = previewUrlForScene(beforeEntry?.scene?.id);
-          const afterUrl = previewUrlForScene(afterEntry?.scene?.id);
-          return (
-            <Link key={loc.slug} href={`/${loc.slug}`} className="card">
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                <Thumb
-                  url={beforeUrl}
-                  label={beforeYear}
-                  alt={`${loc.name} ${beforeYear}`}
-                />
-                <Thumb
-                  url={afterUrl}
-                  label={afterYear}
-                  alt={`${loc.name} ${afterYear}`}
-                />
-              </div>
-              <div className="card-body">
-                <h2 className="card-title">{loc.name}</h2>
-                <div className="card-en">{loc.englishName}</div>
-                <div className="card-score" title="変化速度スコア（定性的な編集上の推定）">
-                  変化速度スコア {loc.changeScore}/10
-                </div>
-                <p className="card-desc">{loc.description}</p>
-              </div>
-            </Link>
-          );
-        })}
-      </div>
+      {/* S5 About */}
+      <section className="about-section" aria-label="About">
+        <h2>なぜEarthLensを作ったか</h2>
+        <p>
+          地球の変化は、ひとつの写真では見えにくい。けれど数十年スケールで
+          同じ場所を並べると、湖が消え、森が削られ、氷が崩れ、都市が広がる様子が
+          はっきりと浮かび上がる。EarthLensは、誰でも自由に使えるLandsatの
+          長期アーカイブを使い、「過去」と「現在」を並べることで、地球が
+          いま起きている変化を一目で実感できる場所を目指して作りました。
+        </p>
+        <p>
+          画像は Microsoft Planetary Computer 経由の Landsat（USGS / NASA）を
+          中心に、Sentinel など公的な衛星観測データを参照しています。
+        </p>
+        <div className="about-sources">
+          <span className="about-source-chip">
+            Microsoft Planetary Computer
+          </span>
+          <span className="about-source-chip">Landsat (USGS / NASA)</span>
+          <span className="about-source-chip">Sentinel (ESA Copernicus)</span>
+          <span className="about-source-chip">CC BY 4.0</span>
+        </div>
+      </section>
     </main>
   );
-}
-
-function Thumb({
-  url,
-  label,
-  alt,
-}: {
-  url: string | null;
-  label: string;
-  alt: string;
-}) {
-  if (!url) {
-    return <div className="placeholder">{label}: 画像なし</div>;
-  }
-  // eslint-disable-next-line @next/next/no-img-element
-  return <img src={url} alt={alt} loading="lazy" />;
 }
