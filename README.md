@@ -159,7 +159,27 @@ Computer STAC から取得し、シーン在庫は `data/scene-inventory.json` �
 ```bash
 npm i -g vercel        # 初回のみ
 vercel                 # プレビューデプロイ（対話で project をリンク）
-vercel --prod          # 本番デプロイ
+vercel --prod          # 本番デプロイ（= npm run deploy）
 ```
 
-設定ファイル: `vercel.json`（framework: nextjs）, `.env.example`（必須env無し）。
+### GitHub Actions 自動デプロイ
+
+`main` への push をトリガーに、GitHub Actions が Vercel CLI（非対話モード）で
+本番デプロイを実行します（ワークフロー: `.github/workflows/deploy.yml`）。
+作者側でブラウザ認証は不要で、CI が下記のリポジトリシークレットを使って認証します。
+
+GitHub リポジトリの **Settings → Secrets and variables → Actions** に、以下の
+**3つのシークレット**を登録してください（値は各自の Vercel アカウントのもの）:
+
+| シークレット名 | 取得元 |
+|----------------|--------|
+| `VERCEL_TOKEN` | <https://vercel.com/account/tokens> で作成するアクセストークン |
+| `VERCEL_ORG_ID` | Vercel ダッシュボード、または `vercel link` 実行後の `.vercel/project.json` の `orgId` |
+| `VERCEL_PROJECT_ID` | 同上 `.vercel/project.json` の `projectId` |
+
+> `vercel link` をローカルで一度実行すると `.vercel/project.json` に
+> `orgId` / `projectId` が書き出されます。3つのシークレットを設定したあとは、
+> `main` に push するたびに自動で本番デプロイされます。
+
+設定ファイル: `vercel.json`（framework: nextjs）, `.env.example` /
+`.env.production`（いずれも必須env無し）。

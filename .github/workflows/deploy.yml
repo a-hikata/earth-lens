@@ -1,0 +1,60 @@
+name: Deploy to Vercel
+
+# Deploys Earth Lens to Vercel on every push to `main`, using the official
+# Vercel CLI in non-interactive mode (no browser login at CI time).
+#
+# ---------------------------------------------------------------------------
+# REQUIRED GitHub repository secrets (Settings → Secrets and variables →
+# Actions → New repository secret). Add all THREE:
+#
+#   VERCEL_TOKEN       Vercel access token. Create at:
+#                      https://vercel.com/account/tokens
+#   VERCEL_ORG_ID      Your Vercel org/team ID.
+#   VERCEL_PROJECT_ID  The Vercel project ID for Earth Lens.
+#
+# The ORG_ID and PROJECT_ID come from the Vercel dashboard, or by running
+# `vercel link` locally once — it writes them to `.vercel/project.json`
+# (orgId / projectId). These are NOT secret values invented here; you must
+# supply your own from your Vercel account.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    branches: [main]
+
+# Avoid overlapping deploys when several pushes land quickly.
+concurrency:
+  group: vercel-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel
+
+      - name: Pull Vercel environment (production)
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy to Vercel (production)
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
