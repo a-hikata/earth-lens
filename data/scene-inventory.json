@@ -406,6 +406,235 @@
           ]
         }
       }
+    },
+    "lake-chad": {
+      "name": "チャド湖",
+      "lat": 13,
+      "lon": 14,
+      "bbox": [
+        13.6,
+        12.6,
+        14.4,
+        13.4
+      ],
+      "years": {
+        "1985": {
+          "source": "planetary-computer",
+          "count": 1,
+          "scenes": [
+            {
+              "id": "LT05_L2SP_185051_19850501_02_T1",
+              "date": "1985-05-01",
+              "platform": "landsat-5",
+              "cloud_cover": 0,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            }
+          ]
+        },
+        "2000": {
+          "source": "planetary-computer",
+          "count": 5,
+          "scenes": [
+            {
+              "id": "LE07_L2SP_185051_20001110_02_T1",
+              "date": "2000-11-10",
+              "platform": "landsat-7",
+              "cloud_cover": 0,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LE07_L2SP_185051_20001009_02_T1",
+              "date": "2000-10-09",
+              "platform": "landsat-7",
+              "cloud_cover": 27,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LE07_L2SP_185051_20000923_02_T1",
+              "date": "2000-09-23",
+              "platform": "landsat-7",
+              "cloud_cover": 64,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LE07_L2SP_185051_20000822_02_T1",
+              "date": "2000-08-22",
+              "platform": "landsat-7",
+              "cloud_cover": 38,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LE07_L2SP_185051_20000603_02_T1",
+              "date": "2000-06-03",
+              "platform": "landsat-7",
+              "cloud_cover": 14,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            }
+          ]
+        },
+        "2024": {
+          "source": "planetary-computer",
+          "count": 5,
+          "scenes": [
+            {
+              "id": "LC09_L2SP_185051_20241230_02_T1",
+              "date": "2024-12-30",
+              "platform": "landsat-9",
+              "cloud_cover": 9.41,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LC08_L2SP_185051_20241222_02_T1",
+              "date": "2024-12-22",
+              "platform": "landsat-8",
+              "cloud_cover": 0,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LC09_L2SP_185051_20241214_02_T1",
+              "date": "2024-12-14",
+              "platform": "landsat-9",
+              "cloud_cover": 0,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LC08_L2SP_185051_20241206_02_T1",
+              "date": "2024-12-06",
+              "platform": "landsat-8",
+              "cloud_cover": 0,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            },
+            {
+              "id": "LC09_L2SP_185051_20241128_02_T1",
+              "date": "2024-11-28",
+              "platform": "landsat-9",
+              "cloud_cover": 0.52,
+              "wrs_path": "185",
+              "wrs_row": "051"
+            }
+          ]
+        }
+      }
+    },
+    "larsen-b": {
+      "name": "ラーセンB棚氷",
+      "lat": -65,
+      "lon": -60,
+      "bbox": [
+        -60.4,
+        -65.4,
+        -59.6,
+        -64.6
+      ],
+      "years": {
+        "1985": {
+          "source": "planetary-computer",
+          "count": 0,
+          "scenes": []
+        },
+        "2000": {
+          "source": "planetary-computer",
+          "count": 5,
+          "scenes": [
+            {
+              "id": "LE07_L2SR_216106_20000308_02_T2",
+              "date": "2000-03-08",
+              "platform": "landsat-7",
+              "cloud_cover": 27,
+              "wrs_path": "216",
+              "wrs_row": "106"
+            },
+            {
+              "id": "LE07_L2SR_216105_20000308_02_T2",
+              "date": "2000-03-08",
+              "platform": "landsat-7",
+              "cloud_cover": 53,
+              "wrs_path": "216",
+              "wrs_row": "105"
+            },
+            {
+              "id": "LE07_L2SR_218106_20000306_02_T2",
+              "date": "2000-03-06",
+              "platform": "landsat-7",
+              "cloud_cover": 64,
+              "wrs_path": "218",
+              "wrs_row": "106"
+            },
+            {
+              "id": "LE07_L2SR_218105_20000306_02_T2",
+              "date": "2000-03-06",
+              "platform": "landsat-7",
+              "cloud_cover": 69,
+              "wrs_path": "218",
+              "wrs_row": "105"
+            },
+            {
+              "id": "LE07_L2SR_215106_20000301_02_T2",
+              "date": "2000-03-01",
+              "platform": "landsat-7",
+              "cloud_cover": 82,
+              "wrs_path": "215",
+              "wrs_row": "106"
+            }
+          ]
+        },
+        "2024": {
+          "source": "planetary-computer",
+          "count": 5,
+          "scenes": [
+            {
+              "id": "LC09_L2SR_217106_20241230_02_T2",
+              "date": "2024-12-30",
+              "platform": "landsat-9",
+              "cloud_cover": 40.61,
+              "wrs_path": "217",
+              "wrs_row": "106"
+            },
+            {
+              "id": "LC09_L2SR_217105_20241230_02_T2",
+              "date": "2024-12-30",
+              "platform": "landsat-9",
+              "cloud_cover": 56.56,
+              "wrs_path": "217",
+              "wrs_row": "105"
+            },
+            {
+              "id": "LC08_L2SR_218106_20241229_02_T2",
+              "date": "2024-12-29",
+              "platform": "landsat-8",
+              "cloud_cover": 69.37,
+              "wrs_path": "218",
+              "wrs_row": "106"
+            },
+            {
+              "id": "LC08_L2SR_218105_20241229_02_T2",
+              "date": "2024-12-29",
+              "platform": "landsat-8",
+              "cloud_cover": 89.46,
+              "wrs_path": "218",
+              "wrs_row": "105"
+            },
+            {
+              "id": "LC08_L2SR_215106_20241224_02_T2",
+              "date": "2024-12-24",
+              "platform": "landsat-8",
+              "cloud_cover": 81.78,
+              "wrs_path": "215",
+              "wrs_row": "106"
+            }
+          ]
+        }
+      }
     }
   }
 }

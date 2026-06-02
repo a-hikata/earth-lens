@@ -73,6 +73,32 @@ export const locations: Location[] = [
     changeDescription:
       "アラブ首長国連邦・ドバイの沿岸。1985年時点ではほとんど手つかずの砂漠の海岸線だったが、2000年代に入って石油依存からの脱却と観光立国を目指す大規模開発が始まった。ヤシの木をかたどった人工島パーム・ジュメイラをはじめとする埋め立てが沖合へと拡張し、2024年の画像では海に突き出す巨大な人工地形がはっきり確認できる。短期間での劇的な海岸線の人工改変の代表例。",
   },
+  {
+    name: "チャド湖",
+    englishName: "Lake Chad",
+    // canonical slug matches the scene inventory key ("lake-chad")
+    slug: "lake-chad",
+    aliases: ["lake-chad", "チャド"],
+    lat: 13.0,
+    lon: 14.0,
+    description:
+      "サヘル地域の干ばつと取水で激減した湖。1985年→現在で水域の大幅な縮小が見える。",
+    changeDescription:
+      "アフリカ中央部、ニジェール・チャド・カメルーン・ナイジェリアの国境に広がる湖。1960年代にはアフリカ有数の大きさを誇ったが、サヘル地域の長期的な干ばつと、流域での灌漑用取水・人口増加による水需要の増大が重なり、半世紀で面積が大幅に縮小した。Landsat の画像では、1985年から現在にかけて水面が後退し、湖底が植生や乾いた土地に変わっていく様子が読み取れる。気候変動と人間活動が複合した環境変化の代表例。",
+  },
+  {
+    name: "ラーセンB棚氷",
+    englishName: "Larsen B Ice Shelf",
+    // canonical slug matches the scene inventory key ("larsen-b")
+    slug: "larsen-b",
+    aliases: ["larsen-b", "ラーセンB"],
+    lat: -65.0,
+    lon: -60.0,
+    description:
+      "2002年に急速崩壊した南極の棚氷。崩壊前（2000年）と現在で氷の消失が見える。",
+    changeDescription:
+      "南極半島の東岸にあった広大な棚氷（海に張り出した氷の板）。2002年1〜3月にかけて、約3,250平方kmにおよぶ広い部分がわずか数週間で粉々に崩壊・消失し、温暖化による棚氷の急速な崩壊の象徴的事例となった。Landsat の画像では、崩壊前の2000年には一続きの氷だった海域が、2024年には開いた海や流氷に変わっている様子が確認できる。なお1985年は当該海域の Landsat シーン在庫がないため表示されない。",
+  },
 ];
 
 export function getLocationBySlug(slug: string): Location | undefined {
