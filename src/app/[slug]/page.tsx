@@ -60,7 +60,8 @@ export default async function LocationPage({
     "@context": "https://schema.org",
     "@type": "Dataset",
     name: `${loc.name}（${loc.englishName}）Landsat ビフォーアフター`,
-    description: loc.changeDescription,
+    description: `${loc.changeDescription}\n\n【変化の原因】${loc.changeCause}\n\n【データの意義】${loc.significance}`,
+    keywords: [loc.name, loc.englishName, "Landsat", "リモートセンシング", loc.changeCause],
     temporalCoverage,
     spatialCoverage: {
       "@type": "Place",
@@ -70,6 +71,7 @@ export default async function LocationPage({
         longitude: loc.lon,
       },
     },
+    measurementTechnique: "Landsat 衛星による光学リモートセンシング（マルチスペクトル観測）",
     creator: { "@type": "Organization", name: DATA_SOURCE.provider },
     distribution: { "@type": "DataDownload", contentUrl: afterUrl ?? undefined },
     license: DATA_SOURCE.licenseUrl,
@@ -115,6 +117,12 @@ export default async function LocationPage({
 
       <p className="section-label">変化の説明</p>
       <p className="change-desc">{loc.changeDescription}</p>
+
+      <p className="section-label">変化の原因</p>
+      <p className="change-desc">{loc.changeCause}</p>
+
+      <p className="section-label">データの意義</p>
+      <p className="change-desc">{loc.significance}</p>
 
       <p className="section-label">年代別シーン</p>
       <div className="ba-grid">

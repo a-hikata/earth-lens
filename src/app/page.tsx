@@ -1,7 +1,24 @@
 import Link from "next/link";
-import { locations } from "@/data/locations";
+import { locations, getLocationBySlug } from "@/data/locations";
 import { getScenesByYear } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
+
+// 最も劇的な変化トップ3。湖の消失・熱帯雨林の破壊・棚氷の崩壊という、
+// 規模・速度ともに際立つ3地点を選定。各 reason は一行の理由。
+const TOP_THREE: { slug: string; reason: string }[] = [
+  {
+    slug: "aral-sea",
+    reason: "灌漑取水で世界第4位の湖がほぼ消失。人為的環境破壊の最大級の一つ。",
+  },
+  {
+    slug: "amazon-rondonia",
+    reason: "「フィッシュボーン」状の森林伐採で熱帯雨林が農地・牧草地へ。",
+  },
+  {
+    slug: "larsen-b",
+    reason: "約3,250km²の南極棚氷が数週間で崩壊。温暖化の象徴的事例。",
+  },
+];
 
 export default function HomePage() {
   return (
@@ -10,6 +27,26 @@ export default function HomePage() {
       <p className="tagline">
         Landsat の50年アーカイブで、同一地点の「過去 vs 現在」を並べる。
       </p>
+
+      <section className="top-three" aria-label="最も劇的な変化 トップ3">
+        <p className="section-label">最も劇的な変化 トップ3</p>
+        <div className="top-three-grid">
+          {TOP_THREE.map(({ slug, reason }, i) => {
+            const loc = getLocationBySlug(slug);
+            if (!loc) return null;
+            return (
+              <Link key={slug} href={`/${loc.slug}`} className="top-three-card">
+                <div className="top-three-rank">#{i + 1}</div>
+                <div>
+                  <h2 className="card-title">{loc.name}</h2>
+                  <div className="card-en">{loc.englishName}</div>
+                  <p className="card-desc">{reason}</p>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="gallery">
         {locations.map((loc) => {
