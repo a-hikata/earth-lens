@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { locations } from "@/data/locations";
-import { getBestScene } from "@/lib/inventory";
+import { getScenesByYear } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
 
 export default function HomePage() {
@@ -13,17 +13,30 @@ export default function HomePage() {
 
       <div className="gallery">
         {locations.map((loc) => {
-          // Grounded preview: earliest curated year (1985) "before" thumbnail,
-          // derived only from a real scene ID in the inventory (else null).
-          const before = getBestScene(loc.slug, "1985");
-          const after = getBestScene(loc.slug, "2024");
-          const beforeUrl = previewUrlForScene(before?.id);
-          const afterUrl = previewUrlForScene(after?.id);
+          // Grounded preview: each location uses its OWN year set, so derive
+          // the "before" thumb from the earliest available year with a real
+          // scene and the "after" thumb from the latest. Scene IDs come only
+          // from the inventory (else null -> placeholder). Never fabricated.
+          const available = getScenesByYear(loc.slug).filter((y) => y.scene);
+          const beforeEntry = available[0];
+          const afterEntry = available[available.length - 1];
+          const beforeYear = beforeEntry?.year ?? "—";
+          const afterYear = afterEntry?.year ?? "—";
+          const beforeUrl = previewUrlForScene(beforeEntry?.scene?.id);
+          const afterUrl = previewUrlForScene(afterEntry?.scene?.id);
           return (
             <Link key={loc.slug} href={`/${loc.slug}`} className="card">
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr" }}>
-                <Thumb url={beforeUrl} label="1985" alt={`${loc.name} 1985`} />
-                <Thumb url={afterUrl} label="2024" alt={`${loc.name} 2024`} />
+                <Thumb
+                  url={beforeUrl}
+                  label={beforeYear}
+                  alt={`${loc.name} ${beforeYear}`}
+                />
+                <Thumb
+                  url={afterUrl}
+                  label={afterYear}
+                  alt={`${loc.name} ${afterYear}`}
+                />
               </div>
               <div className="card-body">
                 <h2 className="card-title">{loc.name}</h2>
