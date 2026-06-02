@@ -20,7 +20,20 @@ const TOP_THREE: { slug: string; reason: string }[] = [
   },
 ];
 
-export default function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string }>;
+}) {
+  const { sort } = await searchParams;
+  // 変化速度スコア順でカードを並べ替える。既定は desc（変化が大きい順）。
+  const sortDir: "desc" | "asc" = sort === "asc" ? "asc" : "desc";
+  const sortedLocations = [...locations].sort((a, b) =>
+    sortDir === "asc"
+      ? a.changeScore - b.changeScore
+      : b.changeScore - a.changeScore,
+  );
+
   return (
     <main>
       <h1 className="site-title">🛰️ Earth Lens</h1>
@@ -48,8 +61,28 @@ export default function HomePage() {
         </div>
       </section>
 
+      <div className="sort-control" role="group" aria-label="変化速度スコアで並べ替え">
+        <span className="section-label" style={{ margin: 0 }}>
+          変化速度スコア順
+        </span>
+        <Link
+          href="/?sort=desc"
+          className={`sort-link${sortDir === "desc" ? " is-active" : ""}`}
+          aria-current={sortDir === "desc" ? "true" : undefined}
+        >
+          大きい順
+        </Link>
+        <Link
+          href="/?sort=asc"
+          className={`sort-link${sortDir === "asc" ? " is-active" : ""}`}
+          aria-current={sortDir === "asc" ? "true" : undefined}
+        >
+          小さい順
+        </Link>
+      </div>
+
       <div className="gallery">
-        {locations.map((loc) => {
+        {sortedLocations.map((loc) => {
           // Grounded preview: each location uses its OWN year set, so derive
           // the "before" thumb from the earliest available year with a real
           // scene and the "after" thumb from the latest. Scene IDs come only
@@ -78,6 +111,9 @@ export default function HomePage() {
               <div className="card-body">
                 <h2 className="card-title">{loc.name}</h2>
                 <div className="card-en">{loc.englishName}</div>
+                <div className="card-score" title="変化速度スコア（定性的な編集上の推定）">
+                  変化速度スコア {loc.changeScore}/10
+                </div>
                 <p className="card-desc">{loc.description}</p>
               </div>
             </Link>
