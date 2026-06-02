@@ -115,6 +115,15 @@ export default async function LocationPage({
         {after && <span>{afterYear}: {after.id}</span>}
       </div>
 
+      <p className="section-label">変化速度スコア</p>
+      <div className="change-score">
+        <span className="change-score-value">{loc.changeScore}/10</span>
+        <span className="change-score-note">
+          1985→2024 のおおよその変化の大きさの目安（定性的な編集上の推定であり、計測値ではありません）
+        </span>
+      </div>
+      <p className="change-desc">根拠: {loc.changeScoreBasis}</p>
+
       <p className="section-label">変化の説明</p>
       <p className="change-desc">{loc.changeDescription}</p>
 
