@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { locations, getLocationBySlug, DATA_SOURCE } from "@/data/locations";
-import { getScenesByYear, getBestScene } from "@/lib/inventory";
+import { getScenesByYear } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
 import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 
@@ -35,8 +35,15 @@ export default async function LocationPage({
   if (!loc) notFound();
 
   const byYear = getScenesByYear(loc.slug);
-  const before = getBestScene(loc.slug, "1985");
-  const after = getBestScene(loc.slug, "2024");
+  // before = 在庫がある最も古い年 / after = 最も新しい年。
+  // 1985 の在庫が無い地点（例: ラーセンB は 2000）でもスライダーが成立する。
+  const availableYears = byYear.filter((y) => y.scene);
+  const beforeEntry = availableYears[0];
+  const afterEntry = availableYears[availableYears.length - 1];
+  const before = beforeEntry?.scene ?? null;
+  const after = afterEntry?.scene ?? null;
+  const beforeYear = beforeEntry?.year ?? "1985";
+  const afterYear = afterEntry?.year ?? "2024";
   const beforeUrl = previewUrlForScene(before?.id);
   const afterUrl = previewUrlForScene(after?.id);
 
@@ -93,17 +100,17 @@ export default async function LocationPage({
         緯度 {loc.lat} / 経度 {loc.lon}
       </div>
 
-      <p className="section-label">1985 ↔ 2024 ビフォーアフター</p>
+      <p className="section-label">{beforeYear} ↔ {afterYear} ビフォーアフター</p>
       <BeforeAfterSlider
         beforeUrl={beforeUrl}
         afterUrl={afterUrl}
-        beforeLabel={`1985${before?.platform ? ` · ${before.platform}` : ""}`}
-        afterLabel={`2024${after?.platform ? ` · ${after.platform}` : ""}`}
+        beforeLabel={`${beforeYear}${before?.platform ? ` · ${before.platform}` : ""}`}
+        afterLabel={`${afterYear}${after?.platform ? ` · ${after.platform}` : ""}`}
         alt={`${loc.name} Landsat`}
       />
       <div className="ba-meta">
-        {before && <span>1985: {before.id}</span>}
-        {after && <span>2024: {after.id}</span>}
+        {before && <span>{beforeYear}: {before.id}</span>}
+        {after && <span>{afterYear}: {after.id}</span>}
       </div>
 
       <p className="section-label">変化の説明</p>
