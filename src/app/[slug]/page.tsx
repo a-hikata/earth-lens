@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
-import { locations, getLocationBySlug } from "@/data/locations";
-import { getScenesByYear } from "@/lib/inventory";
+import { locations, getLocationBySlug, DATA_SOURCE } from "@/data/locations";
+import { getScenesByYear, getBestScene } from "@/lib/inventory";
 import { previewUrlForScene } from "@/lib/landsat";
+import BeforeAfterSlider from "@/components/BeforeAfterSlider";
 
 // Pre-render one static page per canonical location slug.
 export function generateStaticParams() {
@@ -20,7 +21,7 @@ export async function generateMetadata({
   if (!loc) return { title: "Not found — Earth Lens" };
   return {
     title: `${loc.name} (${loc.englishName}) — Earth Lens`,
-    description: loc.description,
+    description: loc.changeDescription.slice(0, 120),
   };
 }
 
@@ -34,9 +35,53 @@ export default async function LocationPage({
   if (!loc) notFound();
 
   const byYear = getScenesByYear(loc.slug);
+  const before = getBestScene(loc.slug, "1985");
+  const after = getBestScene(loc.slug, "2024");
+  const beforeUrl = previewUrlForScene(before?.id);
+  const afterUrl = previewUrlForScene(after?.id);
+
+  // 在庫にある年のみを temporalCoverage / Dataset に含める（捏造しない）。
+  const coveredYears = byYear
+    .filter((y) => y.scene)
+    .map((y) => y.year);
+  const temporalCoverage =
+    coveredYears.length > 0
+      ? `${coveredYears[0]}/${coveredYears[coveredYears.length - 1]}`
+      : undefined;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Dataset",
+    name: `${loc.name}（${loc.englishName}）Landsat ビフォーアフター`,
+    description: loc.changeDescription,
+    temporalCoverage,
+    spatialCoverage: {
+      "@type": "Place",
+      geo: {
+        "@type": "GeoCoordinates",
+        latitude: loc.lat,
+        longitude: loc.lon,
+      },
+    },
+    creator: { "@type": "Organization", name: DATA_SOURCE.provider },
+    distribution: { "@type": "DataDownload", contentUrl: afterUrl ?? undefined },
+    license: DATA_SOURCE.licenseUrl,
+    isBasedOn: DATA_SOURCE.platform,
+    variableMeasured: byYear
+      .filter((y) => y.scene)
+      .map((y) => ({
+        "@type": "PropertyValue",
+        name: `${y.year} Landsat scene`,
+        value: y.scene?.id,
+      })),
+  };
 
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <p>
         <Link href="/" className="back">
           ← すべての地点
@@ -44,13 +89,27 @@ export default async function LocationPage({
       </p>
       <h1 className="site-title">{loc.name}</h1>
       <div className="card-en">{loc.englishName}</div>
-      <p className="tagline" style={{ marginTop: "0.5rem" }}>
-        {loc.description}
-      </p>
       <div className="card-en">
         緯度 {loc.lat} / 経度 {loc.lon}
       </div>
 
+      <p className="section-label">1985 ↔ 2024 ビフォーアフター</p>
+      <BeforeAfterSlider
+        beforeUrl={beforeUrl}
+        afterUrl={afterUrl}
+        beforeLabel={`1985${before?.platform ? ` · ${before.platform}` : ""}`}
+        afterLabel={`2024${after?.platform ? ` · ${after.platform}` : ""}`}
+        alt={`${loc.name} Landsat`}
+      />
+      <div className="ba-meta">
+        {before && <span>1985: {before.id}</span>}
+        {after && <span>2024: {after.id}</span>}
+      </div>
+
+      <p className="section-label">変化の説明</p>
+      <p className="change-desc">{loc.changeDescription}</p>
+
+      <p className="section-label">年代別シーン</p>
       <div className="ba-grid">
         {byYear.map(({ year, scene }) => {
           const url = previewUrlForScene(scene?.id);
@@ -85,6 +144,29 @@ export default async function LocationPage({
           );
         })}
       </div>
+
+      <dl className="source-box">
+        <p style={{ margin: 0, color: "var(--fg)", fontWeight: 600 }}>
+          データソース・ライセンス
+        </p>
+        <dt>提供元</dt>
+        <dd style={{ margin: 0 }}>{DATA_SOURCE.provider}</dd>
+        <dt>配信</dt>
+        <dd style={{ margin: 0 }}>
+          {DATA_SOURCE.platform}（collection: {DATA_SOURCE.collection}）
+        </dd>
+        <dt>ライセンス</dt>
+        <dd style={{ margin: 0 }}>
+          {DATA_SOURCE.license} —{" "}
+          <a
+            href={DATA_SOURCE.licenseUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            出典・引用について
+          </a>
+        </dd>
+      </dl>
     </main>
   );
 }
